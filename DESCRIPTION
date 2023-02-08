@@ -58,3 +58,7 @@ Author: Douglas Nychka [aut, cre],
   University Corporation for Atmospheric Research [cph]
 Date/Publication: 2022-08-12 06:50:06 UTC
 RoxygenNote: 7.2.3
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

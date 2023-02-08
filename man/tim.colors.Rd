@@ -152,61 +152,61 @@ digits are added for the alpha channel.
 fields.color.picker }
 \examples{
 
-tim.colors(10) 
-# returns an array of 10 character strings encoding colors in hex format
+# tim.colors(10) 
+# # returns an array of 10 character strings encoding colors in hex format
 
-# e.g. (red, green,  blue) values of   (16,255, 239)
-#   translates to "#10FFEF" 
-# rgb( 16/255, 255/255, 239/255, alpha=.5)
-#   gives   "#10FFEF80"  note extra "alpha channel"
+# # e.g. (red, green,  blue) values of   (16,255, 239)
+# #   translates to "#10FFEF" 
+# # rgb( 16/255, 255/255, 239/255, alpha=.5)
+# #   gives   "#10FFEF80"  note extra "alpha channel"
 
-# view some color table choices
-set.panel( 4,1)
-fieldsPlotColors( tim.colors())
-title("tim.colors")
-fieldsPlotColors( larry.colors())
-title("larry.colors")
-fieldsPlotColors( two.colors())
-title("two.colors")
-fieldsPlotColors( snow.colors())
-title("snow.colors")
+# # view some color table choices
+# set.panel( 4,1)
+# fieldsPlotColors( tim.colors())
+# title("tim.colors")
+# fieldsPlotColors( larry.colors())
+# title("larry.colors")
+# fieldsPlotColors( two.colors())
+# title("two.colors")
+# fieldsPlotColors( snow.colors())
+# title("snow.colors")
 
-# a bubble plot with some transparency for overlapping dots
-set.seed(123)
-loc<- matrix( rnorm( 200), 100,2)
-Z<- loc[,1] + loc[,2]
-colorMap<- color.scale( Z, col=tim.colors(10, alpha=.8))
-par( mar=c(5,5,5,5)) # extra room on right for color bar
-plot( loc, col=colorMap, pch=16, cex=2)
-#  add a color scale
- image.plot(legend.only=TRUE, zlim=range( Z), col=tim.colors(10))
+# # a bubble plot with some transparency for overlapping dots
+# set.seed(123)
+# loc<- matrix( rnorm( 200), 100,2)
+# Z<- loc[,1] + loc[,2]
+# colorMap<- color.scale( Z, col=tim.colors(10, alpha=.8))
+# par( mar=c(5,5,5,5)) # extra room on right for color bar
+# plot( loc, col=colorMap, pch=16, cex=2)
+# #  add a color scale
+#  image.plot(legend.only=TRUE, zlim=range( Z), col=tim.colors(10))
 
-# using tranparency without alpha the image plot would cover points
+# # using tranparency without alpha the image plot would cover points
 
-obj<- list( x= 1:8, y=1:10, z= outer( 1:8, 1:10, "+") )
-plot( 1:10,1:10)
+# obj<- list( x= 1:8, y=1:10, z= outer( 1:8, 1:10, "+") )
+# plot( 1:10,1:10)
 
-image(obj, col=two.colors(alpha=.5), add=TRUE)
+# image(obj, col=two.colors(alpha=.5), add=TRUE)
 
-coltab<- designer.colors(col=c("blue", "grey", "green"),
-                   x= c( 0,.3,1) )
+# coltab<- designer.colors(col=c("blue", "grey", "green"),
+#                    x= c( 0,.3,1) )
 		   
 
-image( obj, col= coltab )
+# image( obj, col= coltab )
 
-# peg colors at some desired quantiles  of data.
-# NOTE need 0 and 1 for the color scale to make sense
-x<- quantile( c(obj$z), c(0,.25,.5,.75,1.0) )
-# scale these to [0,1]
-zr<- range( c(obj$z))
-x<- (x-zr[1])/ (zr[2] - zr[1])  
+# # peg colors at some desired quantiles  of data.
+# # NOTE need 0 and 1 for the color scale to make sense
+# x<- quantile( c(obj$z), c(0,.25,.5,.75,1.0) )
+# # scale these to [0,1]
+# zr<- range( c(obj$z))
+# x<- (x-zr[1])/ (zr[2] - zr[1])  
 
-coltab<- designer.colors(256,rainbow(5), x)
-image( obj$z, col= coltab )
-# see image.plot for adding all kinds of legends
+# coltab<- designer.colors(256,rainbow(5), x)
+# image( obj$z, col= coltab )
+# # see image.plot for adding all kinds of legends
 
 
-set.panel()
+# set.panel()
 
 }
 \keyword{ aplot}

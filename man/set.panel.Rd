@@ -68,12 +68,12 @@ The function will echo your choice of m and n to the terminal.
 \code{par}  
 }
 \examples{
-set.panel(5,2) #divide screen to hold 10 plots where there are 5 rows  
+#set.panel(5,2) #divide screen to hold 10 plots where there are 5 rows  
 	       #and 2 columns 
-plot( 1:10) 
-plot( 2:8)
+#plot( 1:10) 
+#plot( 2:8)
 
-set.panel() #reset screen to one plot per screen 
+#set.panel() #reset screen to one plot per screen 
 }
 \keyword{hplot}
 % docclass is function

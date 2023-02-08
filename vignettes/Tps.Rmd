@@ -1,0 +1,255 @@
+---
+title: "Tps usage illustration"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Tps}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>", 
+  fig.width = 7, 
+  fig.height = 5
+)
+```
+
+```{r setup}
+library(fields)
+```
+
+# 1. Tps
+
+## 1.1. First
+
+```{r}
+# 2-d example
+fit <- Tps(ChicagoO3$x, ChicagoO3$y) # fits a surface to ozone measurements.
+
+set.panel(2, 2)
+plot(fit) # four diagnostic plots of  fit and residuals.
+set.panel()
+
+# summary of fit and estiamtes of lambda the smoothing parameter
+summary(fit)
+surface(fit) # Quick image/contour plot of GCV surface.
+```
+
+```{r}
+# NOTE: the predict function is quite flexible:
+look <- predict(fit, lambda = 2.0)
+#  evaluates the estimate at lambda =2.0  _not_ the GCV estimate
+#  it does so very efficiently from the Krig fit object.
+
+look <- predict(fit, df = 7.5)
+#  evaluates the estimate at the lambda values such that
+#  the effective degrees of freedom is 7.5
+```
+
+compare this to fitting a thin plate spline with lambda chosen so that there are 7.5 effective degrees of freedom in estimate.
+
+```{r}
+# Note that the GCV function is still computed and minimized
+# but the lambda values used correpsonds to 7.5 df.
+fit1 <- Tps(ChicagoO3$x, ChicagoO3$y, df = 7.5)
+
+set.panel(2, 2)
+plot(fit1) # four diagnostic plots of  fit and residuals.
+# GCV function (lower left) has vertical line at 7.5 df.
+set.panel()
+
+# The basic matrix decompositions are the same for
+# both fit and fit1 objects.
+
+# predict( fit1) is the same as predict( fit, df=7.5)
+# predict( fit1, lambda= fit$lambda) is the same as predict(fit)
+# predict onto a grid that matches the ranges of the data.
+out.p <- predictSurface(fit)
+image(out.p)
+
+# the surface function (e.g. surface( fit)) essentially combines
+# the two steps above
+
+# predict at different effective number of parameters
+out.p <- predictSurface(fit, df = 10)
+```
+
+
+## 1.2. Second
+```{r}
+## Not run:
+# predicting on a grid along with a covariate
+data(COmonthlyMet)
+# predicting average daily minimum temps for spring in Colorado
+# NOTE to create an  4km  elevation grid:
+# data(PRISMelevation); CO.elev1 <- crop.image(PRISMelevation, CO.loc )
+# then use same grid for the predictions: CO.Grid1<- CO.elev1[c("x","y")]
+obj <- Tps(CO.loc, CO.tmin.MAM.climate, Z = CO.elev)
+out.p <- predictSurface(obj,
+  CO.Grid,
+  ZGrid = CO.elevGrid
+)
+imagePlot(out.p)
+US(add = TRUE, col = "grey")
+contour(CO.elevGrid, add = TRUE, levels = c(2000), col = "black")
+
+## End(Not run)
+## Not run:
+# A 1-d example  with confidence intervals
+out <- Tps(rat.diet$t, rat.diet$trt) # lambda found by GCV
+out
+plot(out$x, out$y)
+xgrid <- seq(min(out$x), max(out$x), , 100)
+fhat <- predict(out, xgrid)
+lines(xgrid, fhat, )
+SE <- predictSE(out, xgrid)
+lines(xgrid, fhat + 1.96 * SE, col = "red", lty = 2)
+lines(xgrid, fhat - 1.96 * SE, col = "red", lty = 2)
+
+#
+# compare to the ( much faster) B spline algorithm
+#  sreg(rat.diet$t, rat.diet$trt)
+
+# Here is a 1-d example with 95 percent  CIs  where sreg would not
+# work:
+#  sreg would give the right estimate here but not the right CI's
+x <- seq(0, 1, , 8)
+y <- sin(3 * x)
+out <- Tps(x, y) # lambda found by GCV
+plot(out$x, out$y)
+xgrid <- seq(min(out$x), max(out$x), , 100)
+fhat <- predict(out, xgrid)
+lines(xgrid, fhat, lwd = 2)
+SE <- predictSE(out, xgrid)
+lines(xgrid, fhat + 1.96 * SE, col = "red", lty = 2)
+lines(xgrid, fhat - 1.96 * SE, col = "red", lty = 2)
+
+## End(Not run)
+
+# More involved example adding a covariate to the fixed part of model
+## Not run:
+set.panel(1, 3)
+# without elevation covariate
+out0 <- Tps(RMprecip$x, RMprecip$y)
+surface(out0)
+US(add = TRUE, col = "grey")
+
+# with elevation covariate
+out <- Tps(RMprecip$x, RMprecip$y, Z = RMprecip$elev)
+
+# NOTE: out$d[4] is the estimated elevation coefficient
+# it is easy to get the smooth surface separate from the elevation.
+out.p <- predictSurface(out, drop.Z = TRUE)
+surface(out.p)
+US(add = TRUE, col = "grey")
+
+# and if the estimate is of high resolution and you get by with
+# a simple discretizing -- does not work in this case!
+quilt.plot(out$x, out$fitted.values)
+
+```
+
+## 1.3. Third
+
+```{r}
+# the exact way to do this is evaluate the estimate
+# on a grid where you also have elevations
+# An elevation DEM from the PRISM climate data product (4km resolution)
+data(RMelevation)
+grid.list <- list(x = RMelevation$x, y = RMelevation$y)
+fit.full <- predictSurface(out, grid.list, ZGrid = RMelevation)
+
+# this is the linear fixed part of the second spatial model:
+# lon,lat and elevation
+fit.fixed <- predictSurface(out, grid.list,
+  just.fixed = TRUE,
+  ZGrid = RMelevation
+)
+
+# This is the smooth part but also with the linear lon lat terms.
+fit.smooth <- predictSurface(out, grid.list, drop.Z = TRUE)
+
+#
+set.panel(3, 1)
+
+fit0 <- predictSurface(out0, grid.list)
+image.plot(fit0)
+title(" first spatial model (w/o elevation)")
+image.plot(fit.fixed)
+title(" fixed part of second model (lon,lat,elev linear model)")
+US(add = TRUE)
+image.plot(fit.full)
+title("full prediction second model")
+set.panel()
+
+## End(Not run)
+
+```
+
+# 2. Fast Tps
+```{r}
+# m=2   p= 2m-d= 2
+#
+# Note: aRange = 3 degrees is a very generous taper range.
+# Use some trial aRange value with rdist.nearest to determine a
+# a useful taper. Some empirical studies suggest that in the
+# interpolation case in 2 d the taper should be large enough to
+# about 20 non zero nearest neighbors for every location.
+out2 <- fastTps(RMprecip$x, RMprecip$y,
+  m = 2, aRange = 3.0,
+  profileLambda = FALSE
+)
+
+# note that fastTps produces a object of classes spatialProcess and mKrig
+# so one can use all the
+# the overloaded functions that are defined for these classes.
+# predict, predictSE, plot, sim.spatialProcess
+# summary of what happened note estimate of effective degrees of
+# freedom
+# profiling on lambda has been turned off to make this run quickly
+# but it is suggested that one examines the the profile likelihood over lambda
+print(out2)
+
+## Not run:
+set.panel(1, 2)
+surface(out2)
+```
+
+```{r}
+# now use great circle distance for this smooth
+# Here "aRange" for the taper support is the great circle distance in degrees latitude.
+# Typically for data analysis it more convenient to think in degrees. A degree of
+# latitude is about 68 miles (111 km).
+fastTps(RMprecip$x, RMprecip$y, m = 2, lon.lat = TRUE, aRange = 210) -> out3
+print(out3) # note the effective degrees of freedom is different.
+surface(out3)
+
+set.panel()
+## End(Not run)
+```
+
+```{r}
+## Not run:
+# simulation reusing Tps/Krig object
+fit <- Tps(rat.diet$t, rat.diet$trt)
+true <- fit$fitted.values
+N <- length(fit$y)
+temp <- matrix(NA, ncol = 50, nrow = N)
+tau <- fit$tauHat.GCV
+for (k in 1:50) {
+  ysim <- true + tau * rnorm(N)
+  temp[, k] <- predict(fit, y = ysim)
+}
+matplot(fit$x, temp, type = "l")
+## End(Not run)
+```
+
+## 4-d example
+```{r}
+fit <- Tps(BD[, 1:4], BD$lnya, scale.type = "range")
+# plots fitted surface and contours
+# default is to hold 3rd and 4th fixed at median values
+surface(fit)
+```
