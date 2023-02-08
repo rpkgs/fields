@@ -25,6 +25,8 @@ library(fields)
 ## 1.1. First
 
 ```{r}
+str(ChicagoO3)
+
 # 2-d example
 fit <- Tps(ChicagoO3$x, ChicagoO3$y) # fits a surface to ozone measurements.
 
@@ -46,6 +48,7 @@ look <- predict(fit, lambda = 2.0)
 look <- predict(fit, df = 7.5)
 #  evaluates the estimate at the lambda values such that
 #  the effective degrees of freedom is 7.5
+str(look)
 ```
 
 compare this to fitting a thin plate spline with lambda chosen so that there are 7.5 effective degrees of freedom in estimate.
@@ -108,12 +111,10 @@ SE <- predictSE(out, xgrid)
 lines(xgrid, fhat + 1.96 * SE, col = "red", lty = 2)
 lines(xgrid, fhat - 1.96 * SE, col = "red", lty = 2)
 
-#
 # compare to the ( much faster) B spline algorithm
 #  sreg(rat.diet$t, rat.diet$trt)
 
-# Here is a 1-d example with 95 percent  CIs  where sreg would not
-# work:
+# Here is a 1-d example with 95 percent  CIs  where sreg would not work:
 #  sreg would give the right estimate here but not the right CI's
 x <- seq(0, 1, , 8)
 y <- sin(3 * x)
@@ -125,9 +126,9 @@ lines(xgrid, fhat, lwd = 2)
 SE <- predictSE(out, xgrid)
 lines(xgrid, fhat + 1.96 * SE, col = "red", lty = 2)
 lines(xgrid, fhat - 1.96 * SE, col = "red", lty = 2)
+```
 
-## End(Not run)
-
+```{r}
 # More involved example adding a covariate to the fixed part of model
 ## Not run:
 set.panel(1, 3)
@@ -138,6 +139,7 @@ US(add = TRUE, col = "grey")
 
 # with elevation covariate
 out <- Tps(RMprecip$x, RMprecip$y, Z = RMprecip$elev)
+str(out)
 
 # NOTE: out$d[4] is the estimated elevation coefficient
 # it is easy to get the smooth surface separate from the elevation.
@@ -148,7 +150,6 @@ US(add = TRUE, col = "grey")
 # and if the estimate is of high resolution and you get by with
 # a simple discretizing -- does not work in this case!
 quilt.plot(out$x, out$fitted.values)
-
 ```
 
 ## 1.3. Third
@@ -171,9 +172,7 @@ fit.fixed <- predictSurface(out, grid.list,
 # This is the smooth part but also with the linear lon lat terms.
 fit.smooth <- predictSurface(out, grid.list, drop.Z = TRUE)
 
-#
 set.panel(3, 1)
-
 fit0 <- predictSurface(out0, grid.list)
 image.plot(fit0)
 title(" first spatial model (w/o elevation)")
@@ -183,20 +182,17 @@ US(add = TRUE)
 image.plot(fit.full)
 title("full prediction second model")
 set.panel()
-
-## End(Not run)
-
 ```
 
 # 2. Fast Tps
 ```{r}
-# m=2   p= 2m-d= 2
-#
 # Note: aRange = 3 degrees is a very generous taper range.
 # Use some trial aRange value with rdist.nearest to determine a
 # a useful taper. Some empirical studies suggest that in the
 # interpolation case in 2 d the taper should be large enough to
 # about 20 non zero nearest neighbors for every location.
+
+# m = 2, p = 2m - d = 2
 out2 <- fastTps(RMprecip$x, RMprecip$y,
   m = 2, aRange = 3.0,
   profileLambda = FALSE
@@ -212,7 +208,6 @@ out2 <- fastTps(RMprecip$x, RMprecip$y,
 # but it is suggested that one examines the the profile likelihood over lambda
 print(out2)
 
-## Not run:
 set.panel(1, 2)
 surface(out2)
 ```
@@ -227,11 +222,9 @@ print(out3) # note the effective degrees of freedom is different.
 surface(out3)
 
 set.panel()
-## End(Not run)
 ```
 
 ```{r}
-## Not run:
 # simulation reusing Tps/Krig object
 fit <- Tps(rat.diet$t, rat.diet$trt)
 true <- fit$fitted.values
@@ -243,7 +236,6 @@ for (k in 1:50) {
   temp[, k] <- predict(fit, y = ysim)
 }
 matplot(fit$x, temp, type = "l")
-## End(Not run)
 ```
 
 ## 4-d example

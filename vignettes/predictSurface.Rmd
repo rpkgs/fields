@@ -1,0 +1,108 @@
+---
+title: "predictSurface"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{predictSurface}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7, 
+  fig.height = 5
+)
+```
+
+```{r setup}
+library(fields)
+```
+
+
+```{r}
+data(ozone2)
+
+x <- ozone2$lon.lat
+y <- ozone2$y[16, ]
+
+obj <- Tps(x, y)
+# obj<- spatialProcess(x,y) # or try the alternative model:
+
+fit <- predictSurface(obj, nx = 40, ny = 40)
+str(fit)
+imagePlot(fit)
+
+# predicting a 2d surface holding other variables fixed.
+fit <- Tps(BD[, 1:4], BD$lnya) # fit surface to data
+
+# evaluate fitted surface for  first two
+# variables holding other two fixed at median values
+
+out.p <- predictSurface(fit)
+surface(out.p, type = "C")
+
+# plot surface for second and fourth variables
+# on specific grid.
+glist <- list(
+  KCL = 29.77, MgCl2 = seq(3, 7, , 25), KPO4 = 32.13,
+  dNTP = seq(250, 1500, length.out = 25)
+)
+
+out.p <- predictSurface(fit, glist)
+surface(out.p, type = "C"); title("Prediction")
+
+out.p <- predictSurfaceSE(fit, glist)
+surface(out.p, type = "C"); title("Standard Error")
+```
+
+## Fast prediction algorithm for use with `mKrig/spatialProcess` objects
+
+```{r}
+## Not run:
+data(NorthAmericanRainfall)
+
+x <- cbind(
+  NorthAmericanRainfall$longitude,
+  NorthAmericanRainfall$latitude
+)
+y <- log10(NorthAmericanRainfall$precip)
+
+mKrigObject <- mKrig(x, log10(y),
+  lambda = .024,
+  cov.args = list(
+    aRange = 5.87,
+    Covariance = "Matern",
+    smoothness = 1.0
+  ),
+  sigma2 = .157
+)
+gridList <- list(
+  x = seq(-134, -51, length.out = 100),
+  y = seq(23, 57, length.out = 100)
+)
+
+# exact prediction
+system.time(
+  gHat <- predictSurface(mKrigObject, gridList)
+)
+
+# aproximate
+system.time(
+  gHat1 <- predictSurface(mKrigObject, gridList,
+    fast = TRUE
+  )
+)
+
+# don't worry about the warning ...
+# just indicates some observation locations are located
+# in the same grid box.
+
+# approximation error omitting the NAs from outside the convex hull
+stats(log10(abs(c(gHat$z - gHat1$z))))
+
+image.plot(gHat$x, gHat$y, (gHat$z - gHat1$z))
+points(x, pch = ".", cex = .5)
+world(add = TRUE)
+```

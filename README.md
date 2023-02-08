@@ -9,8 +9,6 @@
 [![monthly](http://cranlogs.r-pkg.org/badges/fields)](https://cran.r-project.org/package=fields) -->
 <!-- badges: end -->
 
-<https://rpkgs.github.io/fields>
-
 
 ## References
 
