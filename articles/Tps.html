@@ -52,6 +52,9 @@
 <li>
       <a href="../articles/Tps.html">Tps usage illustration</a>
     </li>
+    <li>
+      <a href="../articles/predictSurface.html">predictSurface</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -109,7 +112,19 @@
 <h3 id="first">1.1. First<a class="anchor" aria-label="anchor" href="#first"></a>
 </h3>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># 2-d example</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">ChicagoO3</span><span class="op">)</span></span>
+<span><span class="co">#&gt; List of 3</span></span>
+<span><span class="co">#&gt;  $ x      : num [1:20, 1:2] 10.24 3.8 9.11 9.62 -2.43 ...</span></span>
+<span><span class="co">#&gt;   ..- attr(*, "dimnames")=List of 2</span></span>
+<span><span class="co">#&gt;   .. ..$ : chr [1:20] "170310032" "170310037" "170310050" "170311002" ...</span></span>
+<span><span class="co">#&gt;   .. ..$ : chr [1:2] "East.West" "North.South"</span></span>
+<span><span class="co">#&gt;  $ y      : num [1:20] 36.5 34.6 31.6 34.5 37.7 ...</span></span>
+<span><span class="co">#&gt;  $ lon.lat: num [1:20, 1:2] -87.5 -87.7 -87.6 -87.6 -87.8 ...</span></span>
+<span><span class="co">#&gt;   ..- attr(*, "dimnames")=List of 2</span></span>
+<span><span class="co">#&gt;   .. ..$ : chr [1:20] "170310032" "170310037" "170310050" "170311002" ...</span></span>
+<span><span class="co">#&gt;   .. ..$ : chr [1:2] "lon" "lat"</span></span>
+<span></span>
+<span><span class="co"># 2-d example</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Tps.html">Tps</a></span><span class="op">(</span><span class="va">ChicagoO3</span><span class="op">$</span><span class="va">x</span>, <span class="va">ChicagoO3</span><span class="op">$</span><span class="va">y</span><span class="op">)</span> <span class="co"># fits a surface to ozone measurements.</span></span>
 <span></span>
 <span><span class="fu"><a href="../reference/set.panel.html">set.panel</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span></span>
@@ -169,7 +184,9 @@
 <span></span>
 <span><span class="va">look</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit</span>, df <span class="op">=</span> <span class="fl">7.5</span><span class="op">)</span></span>
 <span><span class="co">#  evaluates the estimate at the lambda values such that</span></span>
-<span><span class="co">#  the effective degrees of freedom is 7.5</span></span></code></pre></div>
+<span><span class="co">#  the effective degrees of freedom is 7.5</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">look</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  num [1:20, 1] 36.8 37.9 36.9 38.2 38.1 ...</span></span></code></pre></div>
 <p>compare this to fitting a thin plate spline with lambda chosen so
 that there are 7.5 effective degrees of freedom in estimate.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
@@ -262,12 +279,10 @@ that there are 7.5 effective degrees of freedom in estimate.</p>
 <p><img src="Tps_files/figure-html/unnamed-chunk-5-2.png" width="672"></p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
-<span><span class="co">#</span></span>
 <span><span class="co"># compare to the ( much faster) B spline algorithm</span></span>
 <span><span class="co">#  sreg(rat.diet$t, rat.diet$trt)</span></span>
 <span></span>
-<span><span class="co"># Here is a 1-d example with 95 percent  CIs  where sreg would not</span></span>
-<span><span class="co"># work:</span></span>
+<span><span class="co"># Here is a 1-d example with 95 percent  CIs  where sreg would not work:</span></span>
 <span><span class="co">#  sreg would give the right estimate here but not the right CI's</span></span>
 <span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span>, , <span class="fl">8</span><span class="op">)</span></span>
 <span><span class="va">y</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Trig.html" class="external-link">sin</a></span><span class="op">(</span><span class="fl">3</span> <span class="op">*</span> <span class="va">x</span><span class="op">)</span></span>
@@ -285,10 +300,7 @@ that there are 7.5 effective degrees of freedom in estimate.</p>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/lines.html" class="external-link">lines</a></span><span class="op">(</span><span class="va">xgrid</span>, <span class="va">fhat</span> <span class="op">-</span> <span class="fl">1.96</span> <span class="op">*</span> <span class="va">SE</span>, col <span class="op">=</span> <span class="st">"red"</span>, lty <span class="op">=</span> <span class="fl">2</span><span class="op">)</span></span></code></pre></div>
 <p><img src="Tps_files/figure-html/unnamed-chunk-5-3.png" width="672"></p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span></span>
-<span><span class="co">## End(Not run)</span></span>
-<span></span>
-<span><span class="co"># More involved example adding a covariate to the fixed part of model</span></span>
+<code class="sourceCode R"><span><span class="co"># More involved example adding a covariate to the fixed part of model</span></span>
 <span><span class="co">## Not run:</span></span>
 <span><span class="fu"><a href="../reference/set.panel.html">set.panel</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="co">#&gt; plot window will lay out plots in a 1 by 3 matrix</span></span>
@@ -299,6 +311,146 @@ that there are 7.5 effective degrees of freedom in estimate.</p>
 <span></span>
 <span><span class="co"># with elevation covariate</span></span>
 <span><span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Tps.html">Tps</a></span><span class="op">(</span><span class="va">RMprecip</span><span class="op">$</span><span class="va">x</span>, <span class="va">RMprecip</span><span class="op">$</span><span class="va">y</span>, Z <span class="op">=</span> <span class="va">RMprecip</span><span class="op">$</span><span class="va">elev</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
+<span><span class="co">#&gt; List of 64</span></span>
+<span><span class="co">#&gt;  $ call              : language Tps(x = RMprecip$x, Y = RMprecip$y, Z = RMprecip$elev)</span></span>
+<span><span class="co">#&gt;  $ cov.function.name : chr "Rad.cov"</span></span>
+<span><span class="co">#&gt;  $ null.function.name: chr "Krig.null.function"</span></span>
+<span><span class="co">#&gt;  $ args              :List of 1</span></span>
+<span><span class="co">#&gt;   ..$ p: num 2</span></span>
+<span><span class="co">#&gt;  $ null.args         :List of 1</span></span>
+<span><span class="co">#&gt;   ..$ m: num 2</span></span>
+<span><span class="co">#&gt;  $ m                 : num 2</span></span>
+<span><span class="co">#&gt;  $ chol.args         :List of 1</span></span>
+<span><span class="co">#&gt;   ..$ pivot: logi FALSE</span></span>
+<span><span class="co">#&gt;  $ offset            : num 0</span></span>
+<span><span class="co">#&gt;  $ cost              : num 1</span></span>
+<span><span class="co">#&gt;  $ lambda            : num 9.77e-05</span></span>
+<span><span class="co">#&gt;  $ eff.df            : num 301</span></span>
+<span><span class="co">#&gt;  $ tau2              : logi NA</span></span>
+<span><span class="co">#&gt;  $ sigma             : logi NA</span></span>
+<span><span class="co">#&gt;  $ method            : chr "GCV"</span></span>
+<span><span class="co">#&gt;  $ GCV               : logi TRUE</span></span>
+<span><span class="co">#&gt;  $ correlation.model : logi FALSE</span></span>
+<span><span class="co">#&gt;  $ scale.type        : chr "range"</span></span>
+<span><span class="co">#&gt;  $ x.center          : num [1:2] 0 0</span></span>
+<span><span class="co">#&gt;  $ x.scale           : num [1:2] 1 1</span></span>
+<span><span class="co">#&gt;  $ N                 : int 806</span></span>
+<span><span class="co">#&gt;  $ y                 : num [1:806, 1] 81 63 36 46 33 40 97 99 58 32 ...</span></span>
+<span><span class="co">#&gt;  $ x                 : num [1:806, 1:2] -111 -110 -110 -109 -110 ...</span></span>
+<span><span class="co">#&gt;   ..- attr(*, "dimnames")=List of 2</span></span>
+<span><span class="co">#&gt;   .. ..$ : chr [1:806] "020750" "021248" "023303" "025129" ...</span></span>
+<span><span class="co">#&gt;   .. ..$ : chr [1:2] "lon" "lat"</span></span>
+<span><span class="co">#&gt;  $ weights           : num [1:806] 1 1 1 1 1 1 1 1 1 1 ...</span></span>
+<span><span class="co">#&gt;  $ Z                 : num [1:806, 1] 2196 1710 1937 1976 1696 ...</span></span>
+<span><span class="co">#&gt;  $ NA.ind            : logi [1:806, 1] FALSE FALSE FALSE FALSE FALSE FALSE ...</span></span>
+<span><span class="co">#&gt;  $ yM                : num [1:806, 1] 81 63 36 46 33 40 97 99 58 32 ...</span></span>
+<span><span class="co">#&gt;  $ xM                : num [1:806, 1:2] 0.0379 0.1216 0.1199 0.1467 0.0739 ...</span></span>
+<span><span class="co">#&gt;   ..- attr(*, "dimnames")=List of 2</span></span>
+<span><span class="co">#&gt;   .. ..$ : chr [1:806] "020750" "021248" "023303" "025129" ...</span></span>
+<span><span class="co">#&gt;   .. ..$ : chr [1:2] "lon" "lat"</span></span>
+<span><span class="co">#&gt;   ..- attr(*, "scaled:center")= Named num [1:2] -111 35</span></span>
+<span><span class="co">#&gt;   .. ..- attr(*, "names")= chr [1:2] "lon" "lat"</span></span>
+<span><span class="co">#&gt;   ..- attr(*, "scaled:scale")= Named num [1:2] 12 10</span></span>
+<span><span class="co">#&gt;   .. ..- attr(*, "names")= chr [1:2] "lon" "lat"</span></span>
+<span><span class="co">#&gt;   ..- attr(*, "x.center")= Named num [1:2] -111 35</span></span>
+<span><span class="co">#&gt;   .. ..- attr(*, "names")= chr [1:2] "lon" "lat"</span></span>
+<span><span class="co">#&gt;   ..- attr(*, "x.scale")= Named num [1:2] 12 10</span></span>
+<span><span class="co">#&gt;   .. ..- attr(*, "names")= chr [1:2] "lon" "lat"</span></span>
+<span><span class="co">#&gt;   ..- attr(*, "x.scale.type")= chr "range"</span></span>
+<span><span class="co">#&gt;  $ ZM                : num [1:806, 1] 2196 1710 1937 1976 1696 ...</span></span>
+<span><span class="co">#&gt;  $ weightsM          : num [1:806] 1 1 1 1 1 1 1 1 1 1 ...</span></span>
+<span><span class="co">#&gt;  $ uniquerows        : logi [1:806] TRUE TRUE TRUE TRUE TRUE TRUE ...</span></span>
+<span><span class="co">#&gt;  $ tauHat.rep        : logi NA</span></span>
+<span><span class="co">#&gt;  $ tauHat.pure.error : logi NA</span></span>
+<span><span class="co">#&gt;  $ pure.ss           : num 0</span></span>
+<span><span class="co">#&gt;  $ rep.info          : int [1:806] 1 2 3 4 5 6 7 8 9 10 ...</span></span>
+<span><span class="co">#&gt;  $ knots             : num [1:806, 1:2] 0.0379 0.1216 0.1199 0.1467 0.0739 ...</span></span>
+<span><span class="co">#&gt;   ..- attr(*, "dimnames")=List of 2</span></span>
+<span><span class="co">#&gt;   .. ..$ : chr [1:806] "020750" "021248" "023303" "025129" ...</span></span>
+<span><span class="co">#&gt;   .. ..$ : chr [1:2] "lon" "lat"</span></span>
+<span><span class="co">#&gt;   ..- attr(*, "scaled:center")= Named num [1:2] -111 35</span></span>
+<span><span class="co">#&gt;   .. ..- attr(*, "names")= chr [1:2] "lon" "lat"</span></span>
+<span><span class="co">#&gt;   ..- attr(*, "scaled:scale")= Named num [1:2] 12 10</span></span>
+<span><span class="co">#&gt;   .. ..- attr(*, "names")= chr [1:2] "lon" "lat"</span></span>
+<span><span class="co">#&gt;  $ mle.calc          : logi TRUE</span></span>
+<span><span class="co">#&gt;  $ knot.model        : logi FALSE</span></span>
+<span><span class="co">#&gt;  $ transform         :List of 7</span></span>
+<span><span class="co">#&gt;   ..$ dim          : int [1:2] 806 2</span></span>
+<span><span class="co">#&gt;   ..$ dimnames     :List of 2</span></span>
+<span><span class="co">#&gt;   .. ..$ : chr [1:806] "020750" "021248" "023303" "025129" ...</span></span>
+<span><span class="co">#&gt;   .. ..$ : chr [1:2] "lon" "lat"</span></span>
+<span><span class="co">#&gt;   ..$ scaled:center: Named num [1:2] -111 35</span></span>
+<span><span class="co">#&gt;   .. ..- attr(*, "names")= chr [1:2] "lon" "lat"</span></span>
+<span><span class="co">#&gt;   ..$ scaled:scale : Named num [1:2] 12 10</span></span>
+<span><span class="co">#&gt;   .. ..- attr(*, "names")= chr [1:2] "lon" "lat"</span></span>
+<span><span class="co">#&gt;   ..$ x.center     : Named num [1:2] -111 35</span></span>
+<span><span class="co">#&gt;   .. ..- attr(*, "names")= chr [1:2] "lon" "lat"</span></span>
+<span><span class="co">#&gt;   ..$ x.scale      : Named num [1:2] 12 10</span></span>
+<span><span class="co">#&gt;   .. ..- attr(*, "names")= chr [1:2] "lon" "lat"</span></span>
+<span><span class="co">#&gt;   ..$ x.scale.type : chr "range"</span></span>
+<span><span class="co">#&gt;  $ lambda.est        : num [1:6, 1:6] 9.77e-05 NA 9.77e-05 NA NA ...</span></span>
+<span><span class="co">#&gt;   ..- attr(*, "dimnames")=List of 2</span></span>
+<span><span class="co">#&gt;   .. ..$ : chr [1:6] "GCV" "GCV.model" "GCV.one" "RMSE" ...</span></span>
+<span><span class="co">#&gt;   .. ..$ : chr [1:6] "lambda" "trA" "GCV" "tauHat" ...</span></span>
+<span><span class="co">#&gt;  $ fixed.model       : logi FALSE</span></span>
+<span><span class="co">#&gt;  $ nondiag.W         : logi FALSE</span></span>
+<span><span class="co">#&gt;  $ W                 : num [1:806] 1 1 1 1 1 1 1 1 1 1 ...</span></span>
+<span><span class="co">#&gt;  $ W2                : num [1:806] 1 1 1 1 1 1 1 1 1 1 ...</span></span>
+<span><span class="co">#&gt;  $ matrices          :List of 7</span></span>
+<span><span class="co">#&gt;   ..$ D     : num [1:806] 0 0 0 0 0.886 ...</span></span>
+<span><span class="co">#&gt;   ..$ qr.T  :List of 4</span></span>
+<span><span class="co">#&gt;   .. ..$ qr   : num [1:806, 1:4] -28.3901 0.0352 0.0352 0.0352 0.0352 ...</span></span>
+<span><span class="co">#&gt;   .. .. ..- attr(*, "dimnames")=List of 2</span></span>
+<span><span class="co">#&gt;   .. .. .. ..$ : NULL</span></span>
+<span><span class="co">#&gt;   .. .. .. ..$ : chr [1:4] "Intercept" "lon" "lat" ""</span></span>
+<span><span class="co">#&gt;   .. ..$ rank : int 4</span></span>
+<span><span class="co">#&gt;   .. ..$ qraux: num [1:4] 1.04 1.04 1.06 1.03</span></span>
+<span><span class="co">#&gt;   .. ..$ pivot: int [1:4] 1 2 3 4</span></span>
+<span><span class="co">#&gt;   .. ..- attr(*, "class")= chr "qr"</span></span>
+<span><span class="co">#&gt;   ..$ decomp: chr "WBW"</span></span>
+<span><span class="co">#&gt;   ..$ V     : num [1:802, 1:802] -0.0375 -0.0322 -0.0318 -0.0418 -0.0305 ...</span></span>
+<span><span class="co">#&gt;   ..$ u     : num [1:806] 0 0 0 0 239 ...</span></span>
+<span><span class="co">#&gt;   ..$ nt    : int 4</span></span>
+<span><span class="co">#&gt;   ..$ np    : int 806</span></span>
+<span><span class="co">#&gt;  $ nt                : int 4</span></span>
+<span><span class="co">#&gt;  $ np                : int 806</span></span>
+<span><span class="co">#&gt;  $ decomp            : chr "WBW"</span></span>
+<span><span class="co">#&gt;  $ ind.drift         : logi [1:4] TRUE TRUE TRUE FALSE</span></span>
+<span><span class="co">#&gt;  $ gcv.grid          :'data.frame':  200 obs. of  7 variables:</span></span>
+<span><span class="co">#&gt;   ..$ lambda      : num [1:200] 8.71e-07 9.74e-07 1.08e-06 1.19e-06 1.30e-06 ...</span></span>
+<span><span class="co">#&gt;   ..$ trA         : num [1:200] 766 762 758 754 750 ...</span></span>
+<span><span class="co">#&gt;   ..$ GCV         : num [1:200] 1238 1202 1170 1142 1117 ...</span></span>
+<span><span class="co">#&gt;   ..$ GCV.one     : num [1:200] 1238 1202 1170 1142 1117 ...</span></span>
+<span><span class="co">#&gt;   ..$ GCV.model   : num [1:200] NA NA NA NA NA NA NA NA NA NA ...</span></span>
+<span><span class="co">#&gt;   ..$ tauHat      : num [1:200] 7.87 8.11 8.34 8.57 8.78 ...</span></span>
+<span><span class="co">#&gt;   ..$ -lnLike Prof: num [1:200] 4070 4067 4063 4059 4056 ...</span></span>
+<span><span class="co">#&gt;  $ warningTable      :'data.frame':  6 obs. of  7 variables:</span></span>
+<span><span class="co">#&gt;   ..$ Warning      : logi [1:6] FALSE FALSE FALSE FALSE FALSE FALSE</span></span>
+<span><span class="co">#&gt;   ..$ Refine       : logi [1:6] TRUE FALSE TRUE FALSE FALSE TRUE</span></span>
+<span><span class="co">#&gt;   ..$ indexMIN     : int [1:6] 122 NA 122 NA NA 174</span></span>
+<span><span class="co">#&gt;   ..$ leftEndpoint : logi [1:6] FALSE NA FALSE NA NA FALSE</span></span>
+<span><span class="co">#&gt;   ..$ rightEndpoint: logi [1:6] FALSE NA FALSE NA NA FALSE</span></span>
+<span><span class="co">#&gt;   ..$ lambda       : num [1:6] 9.65e-05 NA 9.65e-05 NA NA ...</span></span>
+<span><span class="co">#&gt;   ..$ effdf        : num [1:6] 303 NA 303 NA NA ...</span></span>
+<span><span class="co">#&gt;  $ c                 : num [1:806, 1] 91964 104306 -133615 -104246 -85931 ...</span></span>
+<span><span class="co">#&gt;  $ d                 : num [1:4, 1] 22.3001 73.5539 -27.8408 0.0215</span></span>
+<span><span class="co">#&gt;   ..- attr(*, "dimnames")=List of 2</span></span>
+<span><span class="co">#&gt;   .. ..$ : chr [1:4] "Intercept" "lon" "lat" ""</span></span>
+<span><span class="co">#&gt;   .. ..$ : NULL</span></span>
+<span><span class="co">#&gt;  $ tauHat.rep        : logi NA</span></span>
+<span><span class="co">#&gt;  $ tauHat.pure.error : logi NA</span></span>
+<span><span class="co">#&gt;  $ pure.ss           : num 0</span></span>
+<span><span class="co">#&gt;  $ fitted.values     : num [1:806, 1] 72 52.8 49.1 56.2 41.4 ...</span></span>
+<span><span class="co">#&gt;  $ residuals         : num [1:806, 1] 8.98 10.19 -13.05 -10.18 -8.39 ...</span></span>
+<span><span class="co">#&gt;  $ fitted.values.null: num [1:806, 1] -9082 -9004 -8988 -8983 -9069 ...</span></span>
+<span><span class="co">#&gt;  $ tauHat.GCV        : num 21</span></span>
+<span><span class="co">#&gt;  $ sigma.MLE         : num 3986853</span></span>
+<span><span class="co">#&gt;  $ tauHat.MLE        : num 19.7</span></span>
+<span><span class="co">#&gt;  $ sigmahat          : num 3986853</span></span>
+<span><span class="co">#&gt;  $ best.model        : num [1:3] 9.77e-05 3.89e+02 3.99e+06</span></span>
+<span><span class="co">#&gt;  $ rhohat            : num 3986853</span></span>
+<span><span class="co">#&gt;  - attr(*, "class")= chr [1:2] "Krig" "Tps"</span></span>
 <span></span>
 <span><span class="co"># NOTE: out$d[4] is the estimated elevation coefficient</span></span>
 <span><span class="co"># it is easy to get the smooth surface separate from the elevation.</span></span>
@@ -309,7 +461,7 @@ that there are 7.5 effective degrees of freedom in estimate.</p>
 <span><span class="co"># and if the estimate is of high resolution and you get by with</span></span>
 <span><span class="co"># a simple discretizing -- does not work in this case!</span></span>
 <span><span class="fu"><a href="../reference/quilt.plot.html">quilt.plot</a></span><span class="op">(</span><span class="va">out</span><span class="op">$</span><span class="va">x</span>, <span class="va">out</span><span class="op">$</span><span class="va">fitted.values</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tps_files/figure-html/unnamed-chunk-5-4.png" width="672"></p>
+<p><img src="Tps_files/figure-html/unnamed-chunk-6-1.png" width="672"></p>
 </div>
 <div class="section level3">
 <h3 id="third">1.3. Third<a class="anchor" aria-label="anchor" href="#third"></a>
@@ -332,10 +484,8 @@ that there are 7.5 effective degrees of freedom in estimate.</p>
 <span><span class="co"># This is the smooth part but also with the linear lon lat terms.</span></span>
 <span><span class="va">fit.smooth</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/predictSurface.html">predictSurface</a></span><span class="op">(</span><span class="va">out</span>, <span class="va">grid.list</span>, drop.Z <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co">#</span></span>
 <span><span class="fu"><a href="../reference/set.panel.html">set.panel</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="co">#&gt; plot window will lay out plots in a 3 by 1 matrix</span></span>
-<span></span>
 <span><span class="va">fit0</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/predictSurface.html">predictSurface</a></span><span class="op">(</span><span class="va">out0</span>, <span class="va">grid.list</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/image.plot.html">image.plot</a></span><span class="op">(</span><span class="va">fit0</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/title.html" class="external-link">title</a></span><span class="op">(</span><span class="st">" first spatial model (w/o elevation)"</span><span class="op">)</span></span>
@@ -344,25 +494,23 @@ that there are 7.5 effective degrees of freedom in estimate.</p>
 <span><span class="fu"><a href="../reference/US.html">US</a></span><span class="op">(</span>add <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="fu"><a href="../reference/image.plot.html">image.plot</a></span><span class="op">(</span><span class="va">fit.full</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/title.html" class="external-link">title</a></span><span class="op">(</span><span class="st">"full prediction second model"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tps_files/figure-html/unnamed-chunk-6-1.png" width="672"></p>
+<p><img src="Tps_files/figure-html/unnamed-chunk-7-1.png" width="672"></p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/set.panel.html">set.panel</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; plot window will lay out plots in a 1 by 1 matrix</span></span>
-<span></span>
-<span><span class="co">## End(Not run)</span></span></code></pre></div>
+<span><span class="co">#&gt; plot window will lay out plots in a 1 by 1 matrix</span></span></code></pre></div>
 </div>
 </div>
 <div class="section level2">
 <h2 id="fast-tps">2. Fast Tps<a class="anchor" aria-label="anchor" href="#fast-tps"></a>
 </h2>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># m=2   p= 2m-d= 2</span></span>
-<span><span class="co">#</span></span>
-<span><span class="co"># Note: aRange = 3 degrees is a very generous taper range.</span></span>
+<code class="sourceCode R"><span><span class="co"># Note: aRange = 3 degrees is a very generous taper range.</span></span>
 <span><span class="co"># Use some trial aRange value with rdist.nearest to determine a</span></span>
 <span><span class="co"># a useful taper. Some empirical studies suggest that in the</span></span>
 <span><span class="co"># interpolation case in 2 d the taper should be large enough to</span></span>
 <span><span class="co"># about 20 non zero nearest neighbors for every location.</span></span>
+<span></span>
+<span><span class="co"># m = 2, p = 2m - d = 2</span></span>
 <span><span class="va">out2</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Tps.html">fastTps</a></span><span class="op">(</span><span class="va">RMprecip</span><span class="op">$</span><span class="va">x</span>, <span class="va">RMprecip</span><span class="op">$</span><span class="va">y</span>,</span>
 <span>  m <span class="op">=</span> <span class="fl">2</span>, aRange <span class="op">=</span> <span class="fl">3.0</span>,</span>
 <span>  profileLambda <span class="op">=</span> <span class="cn">FALSE</span></span>
@@ -389,8 +537,8 @@ that there are 7.5 effective degrees of freedom in estimate.</p>
 <span><span class="co">#&gt;  tau  Nugget stan. dev:                     25.99            </span></span>
 <span><span class="co">#&gt;  lambda   tau^2/sigma^2:                    1.33             </span></span>
 <span><span class="co">#&gt;  aRange parameter (in units of distance):   3                </span></span>
-<span><span class="co">#&gt;  Approx.  degrees of freedom for curve      111.5            </span></span>
-<span><span class="co">#&gt;     Standard Error of df estimate:          2.704            </span></span>
+<span><span class="co">#&gt;  Approx.  degrees of freedom for curve      110.1            </span></span>
+<span><span class="co">#&gt;     Standard Error of df estimate:          2.348            </span></span>
 <span><span class="co">#&gt;  log Likelihood:                            -3871.12060412435</span></span>
 <span><span class="co">#&gt;  log Likelihood REML:                       -3879.17851011222</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -429,13 +577,12 @@ that there are 7.5 effective degrees of freedom in estimate.</p>
 <span><span class="co">#&gt;             lambda                tau             sigma2             aRange </span></span>
 <span><span class="co">#&gt;           1.330438          25.991494         507.771046           3.000000 </span></span>
 <span><span class="co">#&gt;             eff.df                GCV </span></span>
-<span><span class="co">#&gt;         111.486783         787.182674</span></span>
+<span><span class="co">#&gt;         110.070525         783.982006</span></span>
 <span></span>
-<span><span class="co">## Not run:</span></span>
 <span><span class="fu"><a href="../reference/set.panel.html">set.panel</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span></span>
 <span><span class="co">#&gt; plot window will lay out plots in a 1 by 2 matrix</span></span>
 <span><span class="fu"><a href="../reference/fields-internal.html">surface</a></span><span class="op">(</span><span class="va">out2</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tps_files/figure-html/unnamed-chunk-7-1.png" width="672"></p>
+<p><img src="Tps_files/figure-html/unnamed-chunk-8-1.png" width="672"></p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># now use great circle distance for this smooth</span></span>
 <span><span class="co"># Here "aRange" for the taper support is the great circle distance in degrees latitude.</span></span>
@@ -456,8 +603,8 @@ that there are 7.5 effective degrees of freedom in estimate.</p>
 <span><span class="co">#&gt;  tau  Nugget stan. dev:                     26.25            </span></span>
 <span><span class="co">#&gt;  lambda   tau^2/sigma^2:                    1.26             </span></span>
 <span><span class="co">#&gt;  aRange parameter (in units of distance):   210              </span></span>
-<span><span class="co">#&gt;  Approx.  degrees of freedom for curve      93.52            </span></span>
-<span><span class="co">#&gt;     Standard Error of df estimate:          3.075            </span></span>
+<span><span class="co">#&gt;  Approx.  degrees of freedom for curve      97.41            </span></span>
+<span><span class="co">#&gt;     Standard Error of df estimate:          2.503            </span></span>
 <span><span class="co">#&gt;  log Likelihood:                            -3869.75983890003</span></span>
 <span><span class="co">#&gt;  log Likelihood REML:                       -3877.51050412707</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -496,17 +643,15 @@ that there are 7.5 effective degrees of freedom in estimate.</p>
 <span><span class="co">#&gt;             lambda                tau             sigma2             aRange </span></span>
 <span><span class="co">#&gt;           1.260473          26.247003         546.544737         210.000000 </span></span>
 <span><span class="co">#&gt;             eff.df                GCV </span></span>
-<span><span class="co">#&gt;          93.523726         778.959697</span></span>
+<span><span class="co">#&gt;          97.406142         787.518988</span></span>
 <span><span class="fu"><a href="../reference/fields-internal.html">surface</a></span><span class="op">(</span><span class="va">out3</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tps_files/figure-html/unnamed-chunk-8-1.png" width="672"></p>
+<p><img src="Tps_files/figure-html/unnamed-chunk-9-1.png" width="672"></p>
 <div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span></span>
 <span><span class="fu"><a href="../reference/set.panel.html">set.panel</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; plot window will lay out plots in a 1 by 1 matrix</span></span>
-<span><span class="co">## End(Not run)</span></span></code></pre></div>
+<span><span class="co">#&gt; plot window will lay out plots in a 1 by 1 matrix</span></span></code></pre></div>
 <div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## Not run:</span></span>
-<span><span class="co"># simulation reusing Tps/Krig object</span></span>
+<code class="sourceCode R"><span><span class="co"># simulation reusing Tps/Krig object</span></span>
 <span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Tps.html">Tps</a></span><span class="op">(</span><span class="va">rat.diet</span><span class="op">$</span><span class="va">t</span>, <span class="va">rat.diet</span><span class="op">$</span><span class="va">trt</span><span class="op">)</span></span>
 <span><span class="va">true</span> <span class="op">&lt;-</span> <span class="va">fit</span><span class="op">$</span><span class="va">fitted.values</span></span>
 <span><span class="va">N</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">y</span><span class="op">)</span></span>
@@ -517,18 +662,16 @@ that there are 7.5 effective degrees of freedom in estimate.</p>
 <span>  <span class="va">temp</span><span class="op">[</span>, <span class="va">k</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/predict.html" class="external-link">predict</a></span><span class="op">(</span><span class="va">fit</span>, y <span class="op">=</span> <span class="va">ysim</span><span class="op">)</span></span>
 <span><span class="op">}</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/graphics/matplot.html" class="external-link">matplot</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">x</span>, <span class="va">temp</span>, type <span class="op">=</span> <span class="st">"l"</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tps_files/figure-html/unnamed-chunk-9-1.png" width="672"></p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co">## End(Not run)</span></span></code></pre></div>
+<p><img src="Tps_files/figure-html/unnamed-chunk-10-1.png" width="672"></p>
 <div class="section level3">
 <h3 id="d-example">4-d example<a class="anchor" aria-label="anchor" href="#d-example"></a>
 </h3>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/Tps.html">Tps</a></span><span class="op">(</span><span class="va">BD</span><span class="op">[</span>, <span class="fl">1</span><span class="op">:</span><span class="fl">4</span><span class="op">]</span>, <span class="va">BD</span><span class="op">$</span><span class="va">lnya</span>, scale.type <span class="op">=</span> <span class="st">"range"</span><span class="op">)</span></span>
 <span><span class="co"># plots fitted surface and contours</span></span>
 <span><span class="co"># default is to hold 3rd and 4th fixed at median values</span></span>
 <span><span class="fu"><a href="../reference/fields-internal.html">surface</a></span><span class="op">(</span><span class="va">fit</span><span class="op">)</span></span></code></pre></div>
-<p><img src="Tps_files/figure-html/unnamed-chunk-10-1.png" width="672"></p>
+<p><img src="Tps_files/figure-html/unnamed-chunk-11-1.png" width="672"></p>
 </div>
 </div>
   </div>
