@@ -80,29 +80,34 @@ out.p <- predictSurface(fit, df = 10)
 ```
 
 
-## 1.2. Second
+## 1.2. Predicting average daily minimum temperature for spring in Colorado
+
+Predicting on a grid along with a covariate.
+> 把高程Z作为协变量。
+
 ```{r}
-## Not run:
-# predicting on a grid along with a covariate
 data(COmonthlyMet)
-# predicting average daily minimum temps for spring in Colorado
-# NOTE to create an  4km  elevation grid:
-# data(PRISMelevation); CO.elev1 <- crop.image(PRISMelevation, CO.loc )
-# then use same grid for the predictions: CO.Grid1<- CO.elev1[c("x","y")]
+length(CO.tmin.MAM.climate)
+# Ipaper::print2(CO.loc, CO.elev, CO.Grid, CO.elevGrid)
+
+# # NOTE to create an 4km elevation grid:
+# data(PRISMelevation); 
+# CO.elev1 <- crop.image(PRISMelevation, CO.loc)
+# CO.Grid1<- CO.elev1[c("x","y")] # then use same grid for the predictions
 obj <- Tps(CO.loc, CO.tmin.MAM.climate, Z = CO.elev)
-out.p <- predictSurface(obj,
-  CO.Grid,
-  ZGrid = CO.elevGrid
-)
+
+# Note the size of `CO.Grid` and `CO.elevGrid` should be same.
+out.p <- predictSurface(obj, CO.Grid, ZGrid = CO.elevGrid)
 imagePlot(out.p)
 US(add = TRUE, col = "grey")
 contour(CO.elevGrid, add = TRUE, levels = c(2000), col = "black")
+```
 
-## End(Not run)
-## Not run:
-# A 1-d example  with confidence intervals
+## 1.3. A 1-d example  with confidence intervals
+```{r}
 out <- Tps(rat.diet$t, rat.diet$trt) # lambda found by GCV
 out
+
 plot(out$x, out$y)
 xgrid <- seq(min(out$x), max(out$x), , 100)
 fhat <- predict(out, xgrid)
@@ -111,7 +116,7 @@ SE <- predictSE(out, xgrid)
 lines(xgrid, fhat + 1.96 * SE, col = "red", lty = 2)
 lines(xgrid, fhat - 1.96 * SE, col = "red", lty = 2)
 
-# compare to the ( much faster) B spline algorithm
+# compare to the (uch faster) B spline algorithm
 #  sreg(rat.diet$t, rat.diet$trt)
 
 # Here is a 1-d example with 95 percent  CIs  where sreg would not work:
@@ -128,9 +133,9 @@ lines(xgrid, fhat + 1.96 * SE, col = "red", lty = 2)
 lines(xgrid, fhat - 1.96 * SE, col = "red", lty = 2)
 ```
 
-```{r}
-# More involved example adding a covariate to the fixed part of model
-## Not run:
+## 1.4. Add a covariate to the fixed part of model
+
+```{r, fig.width=9, fig.height=4}
 set.panel(1, 3)
 # without elevation covariate
 out0 <- Tps(RMprecip$x, RMprecip$y)
@@ -139,7 +144,6 @@ US(add = TRUE, col = "grey")
 
 # with elevation covariate
 out <- Tps(RMprecip$x, RMprecip$y, Z = RMprecip$elev)
-str(out)
 
 # NOTE: out$d[4] is the estimated elevation coefficient
 # it is easy to get the smooth surface separate from the elevation.
@@ -152,80 +156,52 @@ US(add = TRUE, col = "grey")
 quilt.plot(out$x, out$fitted.values)
 ```
 
-## 1.3. Third
+## 1.5. Third
 
-```{r}
-# the exact way to do this is evaluate the estimate
-# on a grid where you also have elevations
+> 把这个案例，改成`fastTps`
+
+```{r, fig.height=8, fig.width=8}
+# the exact way to do this is evaluate the estimate on a grid where you also have elevations
 # An elevation DEM from the PRISM climate data product (4km resolution)
 data(RMelevation)
+
 grid.list <- list(x = RMelevation$x, y = RMelevation$y)
-fit.full <- predictSurface(out, grid.list, ZGrid = RMelevation)
+
+# Ipaper::print2(RMelevation, grid.list)
 
 # this is the linear fixed part of the second spatial model:
-# lon,lat and elevation
-fit.fixed <- predictSurface(out, grid.list,
-  just.fixed = TRUE,
-  ZGrid = RMelevation
-)
+# lon, lat and elevation
+fit.full <- predictSurface(out, grid.list, ZGrid = RMelevation)
 
-# This is the smooth part but also with the linear lon lat terms.
-fit.smooth <- predictSurface(out, grid.list, drop.Z = TRUE)
+fit0 <- predictSurface(out0, grid.list) # without elevation
 
-set.panel(3, 1)
-fit0 <- predictSurface(out0, grid.list)
+fit.fixed <- predictSurface(out, grid.list, just.fixed = TRUE, ZGrid = RMelevation) # lon, lat, elev
+
+fit.smooth <- predictSurface(out, grid.list, drop.Z = TRUE) # smooth part + linear lon lat terms
+
+set.panel(2, 2)
+
 image.plot(fit0)
-title(" first spatial model (w/o elevation)")
+title("First spatial model (without elevation)")
+
 image.plot(fit.fixed)
-title(" fixed part of second model (lon,lat,elev linear model)")
+title("Fixed part: linear(lon, lat, elev)")
+
+image.plot(fit.smooth)
+title("Smooth part (smooth + linear(lon, lat))")
+
 US(add = TRUE)
 image.plot(fit.full)
-title("full prediction second model")
+title("Full prediction second model")
 set.panel()
 ```
 
-# 2. Fast Tps
-```{r}
-# Note: aRange = 3 degrees is a very generous taper range.
-# Use some trial aRange value with rdist.nearest to determine a
-# a useful taper. Some empirical studies suggest that in the
-# interpolation case in 2 d the taper should be large enough to
-# about 20 non zero nearest neighbors for every location.
 
-# m = 2, p = 2m - d = 2
-out2 <- fastTps(RMprecip$x, RMprecip$y,
-  m = 2, aRange = 3.0,
-  profileLambda = FALSE
-)
-
-# note that fastTps produces a object of classes spatialProcess and mKrig
-# so one can use all the
-# the overloaded functions that are defined for these classes.
-# predict, predictSE, plot, sim.spatialProcess
-# summary of what happened note estimate of effective degrees of
-# freedom
-# profiling on lambda has been turned off to make this run quickly
-# but it is suggested that one examines the the profile likelihood over lambda
-print(out2)
-
-set.panel(1, 2)
-surface(out2)
-```
+## 1.6. simulation reusing Tps/Krig object
 
 ```{r}
-# now use great circle distance for this smooth
-# Here "aRange" for the taper support is the great circle distance in degrees latitude.
-# Typically for data analysis it more convenient to think in degrees. A degree of
-# latitude is about 68 miles (111 km).
-fastTps(RMprecip$x, RMprecip$y, m = 2, lon.lat = TRUE, aRange = 210) -> out3
-print(out3) # note the effective degrees of freedom is different.
-surface(out3)
+str(rat.diet)
 
-set.panel()
-```
-
-```{r}
-# simulation reusing Tps/Krig object
 fit <- Tps(rat.diet$t, rat.diet$trt)
 true <- fit$fitted.values
 N <- length(fit$y)
@@ -238,10 +214,53 @@ for (k in 1:50) {
 matplot(fit$x, temp, type = "l")
 ```
 
-## 4-d example
+## 1.7. 4-d example
 ```{r}
 fit <- Tps(BD[, 1:4], BD$lnya, scale.type = "range")
 # plots fitted surface and contours
 # default is to hold 3rd and 4th fixed at median values
 surface(fit)
+```
+
+
+# 2. Fast Tps
+```{r}
+# Note: aRange = 3 degrees is a very generous taper range.
+# Use some trial `aRange` value with `rdist.nearest` to determine a
+# a useful taper. Some empirical studies suggest that in the
+# interpolation case in 2 d the taper should be large enough to
+# about 20 non zero nearest neighbors for every location.
+
+# m = 2, p = 2m - d = 2
+out2 <- fastTps(RMprecip$x, RMprecip$y,
+  m = 2, aRange = 3.0,
+  profileLambda = FALSE
+)
+
+# Note that fastTps produces a object of classes spatialProcess and mKrig
+# so one can use all the overloaded functions that are defined for these classes.
+# predict, predictSE, plot, sim.spatialProcess
+# 
+# summary of what happened note estimate of effective degrees of freedom
+# profiling on lambda has been turned off to make this run quickly
+# but it is suggested that one examines the the profile likelihood over lambda
+print(out2)
+
+set.panel(1, 2)
+surface(out2)
+```
+
+
+Now use great circle distance for this smooth.
+
+Here "aRange" for the taper support is the great circle distance in degrees latitude.
+Typically for data analysis it more convenient to think in degrees. A degree of
+latitude is about 68 miles (111 km).
+
+```{r}
+fastTps(RMprecip$x, RMprecip$y, m = 2, lon.lat = TRUE, aRange = 210) -> out3
+print(out3) # note the effective degrees of freedom is different.
+surface(out3)
+
+set.panel()
 ```

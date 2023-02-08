@@ -1,0 +1,107 @@
+---
+title: "fastTps"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{fastTps}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+# 1. Tps
+
+```{r setup}
+library(fields)
+```
+
+```{r}
+# An elevation DEM from the PRISM climate data product (4km resolution)
+data(RMelevation)
+grid.list <- RMelevation[1:2]
+
+# Ipaper::print2(RMelevation, grid.list)
+str(RMprecip)
+```
+
+## 1.1. Add a covariate to the fixed part of model
+
+
+```{r}
+out0 <- Tps(RMprecip$x, RMprecip$y) # without elevation covariate
+out  <- Tps(RMprecip$x, RMprecip$y, Z = RMprecip$elev) # with elevation covariate
+
+# NOTE: out$d[4] is the estimated elevation coefficient
+# it is easy to get the smooth surface separate from the elevation.
+out.p <- predictSurface(out, drop.Z = TRUE)
+```
+
+```{r, fig.width=9, fig.height=9}
+set.panel(2, 2)
+surface(out0)
+US(add = TRUE, col = "grey")
+
+surface(out.p) # delete elev
+US(add = TRUE, col = "grey")
+
+# and if the estimate is of high resolution and you get by with
+# a simple discretizing -- does not work in this case!
+quilt.plot(out$x, out$fitted.values)
+```
+
+## 1.2. 分解各个组分
+
+```{r, fig.height=8, fig.width=8}
+fit.full <- predictSurface(out, grid.list, ZGrid = RMelevation)
+
+fit0 <- predictSurface(out0, grid.list) # without elevation
+
+fit.fixed <- predictSurface(out, grid.list, just.fixed = TRUE, ZGrid = RMelevation) # lon, lat, elev
+
+fit.smooth <- predictSurface(out, grid.list, drop.Z = TRUE) # smooth part + linear lon lat terms
+
+set.panel(2, 2)
+
+image.plot(fit0)
+title("First spatial model (without elevation)")
+
+image.plot(fit.fixed)
+title("Fixed part: linear(lon, lat, elev)")
+
+image.plot(fit.smooth)
+title("Smooth part (smooth + linear(lon, lat))")
+
+US(add = TRUE)
+image.plot(fit.full)
+title("Full prediction second model")
+set.panel()
+```
+
+
+# 2. fastTps
+
+```{r}
+system.time({
+  r_low <- Tps(RMprecip$x, RMprecip$y, Z = RMprecip$elev) # with elevation covariate
+})
+
+# not always work
+system.time({
+  r_fst1 <- fastTps(RMprecip$x, RMprecip$y, Z = RMprecip$elev, 
+    aRange = 200, lon.lat = TRUE) # with elevation covariate
+})
+
+system.time({
+  r_fst2 <- fastTps(RMprecip$x, RMprecip$y,
+    # m = 2, 
+    aRange = 3.0,
+    profileLambda = FALSE
+  )
+})
+# in this case not work
+```
